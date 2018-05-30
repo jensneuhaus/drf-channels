@@ -7,5 +7,5 @@ from .models import SampleModel
 class SampleModelConsumer(AsyncConsumerActionMixin, AsyncJsonWebsocketConsumer):
     model = SampleModel
 
-    async def testmodel_broadcast(self, event):
+    async def samplemodel_broadcast(self, event):
         await self.send_json(event)

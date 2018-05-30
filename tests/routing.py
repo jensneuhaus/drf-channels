@@ -4,5 +4,5 @@ from channels.routing import URLRouter
 from .bindings import SampleModelResourceBinding
 
 application = URLRouter([
-    url(r'testmodels/$', SampleModelResourceBinding.consumer),
+    url(r'samplemodels/$', SampleModelResourceBinding.consumer),
 ])

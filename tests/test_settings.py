@@ -10,7 +10,7 @@ ASGI_APPLICATION = 'tests.routing.application'
 
 CHANNEL_LAYERS = {
     'default': {
-        'BACKEND': 'asgiref.inmemory.ChannelLayer',
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
     },
 }
 
@@ -21,5 +21,5 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'channels',
-    'tests'
+    'tests.apps.TestsConfig',
 )

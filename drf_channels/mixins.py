@@ -1,4 +1,4 @@
-import six
+from urllib.parse import parse_qsl
 
 from rest_framework.exceptions import ValidationError
 
@@ -23,51 +23,22 @@ class AsyncConsumerActionMixin(object):
             self.model._meta.object_name.lower(),
         )
 
-    async def group_names(self, data):
-        groups = []
-        actions = data['action']
-        if isinstance(actions, six.string_types):
-            actions = [actions]
+    async def connect(self):
+        query = dict(parse_qsl(self.scope['query_string'].decode('utf-8')))
+        if 'subscribe' in query:
+            await self.set_groups(
+                query['subscribe'].split(','),
+                query.get('id')
+            )
 
-        instance_id = data.get('id')
+        await self.accept()
+
+    async def set_groups(self, actions, id):
         for action in actions:
-            if instance_id is not None:
-                group_name = get_group_name(self.model_label, action, instance_id)
-            else:
-                group_name = get_group_name(self.model_label, action)
-
-            if group_name not in groups:
-                groups.append(group_name)
-
-        return groups
-
-    async def receive_json(self, content):
-        if 'action' not in content:
-            raise ValidationError('action required')
-
-        request_type = content['action']
-        if request_type == self.ACTION_SUBSCRIBE:
-            await self.subscribe(content)
-
-    async def subscribe(self, content):
-        data = content['data']
-        if 'action' not in data:
-            raise ValidationError('action required')
-
-        for group_name in await self.group_names(data):
-            await self.add_group(group_name)
-
-        content.update({
-            'response_status': 200,
-            'errors': [],
-        })
-        await self.send_json(content)
-
-    async def add_group(self, group_name):
-        await self.channel_layer.group_add(
-            group_name,
-            self.channel_name
-        )
+            await self.channel_layer.group_add(
+                get_group_name(self.model_label, action, id),
+                self.channel_name
+            )
 
 
 class SerializerMixin(object):
